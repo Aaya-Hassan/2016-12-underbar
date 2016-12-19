@@ -117,12 +117,15 @@
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
-    var array = []
-    _.each(collection,function(element,i){
-      array.push(iterator(element))
-    })
-    return array;
-  };
+    var acc = [];
+    if (!Array.isArray(collection)) {
+      acc = {};
+    }
+    _.each(collection, function(element, key) {
+      acc[key] = iterator(element, key);
+    });
+    return acc;
+  }
 
   /*
    * TIP: map is really handy when you want to transform an array of
@@ -250,7 +253,15 @@ return obj
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+      for(var i=0;i<arguments.length;i++){
+      for(var key in arguments[i]){
+        if(! Object.keys(obj).includes(key))
+        obj[key]=arguments[i][key]
+      }
+  }
+return obj
   };
+
 
 
   /**
@@ -292,7 +303,19 @@ return obj
   // _.memoize should return a function that, when called, will check if it has
   // already computed the result for the given argument and return that value
   // instead if possible.
+
   _.memoize = function(func) {
+    var object = {}
+    var argument = ""
+    return function() {
+     argument = JSON.stringify(arguments)
+      if (!object[argument]) {
+        return object[argument]=func.apply(this, arguments);
+      }
+      // The new function always returns the originally computed result.
+      return object[argument]
+    }
+    return func()
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -302,6 +325,11 @@ return obj
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    // var x = arguments;
+    if(arguments.length>2){
+      return setInterval(func(arguments[2],arguments[3]), wait)
+    }
+   return setInterval(func, wait);    
   };
 
 
@@ -316,6 +344,8 @@ return obj
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var arr= array.slice(0,array.length)
+    return arr.sort();
   };
 
 
@@ -330,13 +360,30 @@ return obj
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
-  };
+    return _.map(collection,function(x){
+    if(typeof functionOrKey === "string"){
+      return x[functionOrKey].apply(x)
+   
+  }else {
+  return functionOrKey.apply(x)
+}
+  })
+
+};
 
   // Sort the object's values by a criterion produced by an iterator.
   // If iterator is a string, sort objects by that property with the name
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    // return _.map(collection,function(elem){
+    //    if(typeof iterator === "string"){
+    //   return (elem[iterator].apply(elem))
+    // }
+    // // else {
+    // //   (iterator.apply(elem))
+    // // }
+    // })
   };
 
   // Zip together two or more arrays with elements of the same index
